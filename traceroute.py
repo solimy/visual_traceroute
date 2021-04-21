@@ -25,7 +25,17 @@ def get_ip_latlong(ip):
 
 
 def plot(ip_list, latlong_list):
-    gmap = gmplot.GoogleMapPlotter(*(latlong_list[0]), 14, apikey=os.environ['GMPLOT_KEY'])
+    final_ip_list = [f'{ip_list[0][0]}: {ip_list[0][1]}']
+    final_latlong_list = [latlong_list[0]]
+    for (i, ip), latlong in zip(ip_list[1:], latlong_list[1:]):
+        if latlong == final_latlong_list[-1]:
+            final_ip_list[-1] = f'{final_ip_list[-1]}, {i}: {ip}'
+        else:
+            final_ip_list.append(f'{i}: {ip}')
+            final_latlong_list.append(latlong)
+    ip_list = final_ip_list
+    latlong_list = final_latlong_list
+    gmap = gmplot.GoogleMapPlotter(*(latlong_list[0]), 0, apikey=os.environ['GMPLOT_KEY'])
 
     gmap.plot(*zip(*latlong_list),
         color='cornflowerblue',
@@ -35,8 +45,8 @@ def plot(ip_list, latlong_list):
     gmap.scatter(*zip(*latlong_list[1:-1]), precision=14, color='black')
     gmap.scatter(*zip(*latlong_list[:1]), precision=14, color='red')
     gmap.scatter(*zip(*latlong_list[-1:]), precision=14, color='red')
-    for (i, ip), (lat, long) in zip(ip_list, latlong_list):
-        gmap.text(lat, long, f'{i}: {ip}', precision=14)
+    for text, (lat, long) in zip(ip_list, latlong_list):
+        gmap.text(lat, long, text, precision=14)
 
     gmap.draw('traceroute.html')
 
